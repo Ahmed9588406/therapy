@@ -5,12 +5,18 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 import 'display_info_for_therapy.dart';
 import 'TableTherapySelection.dart';
+import 'calender_appointement.dart';
+
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await initializeDateFormatting('ar', null); // Initialize Arabic locale
+
   runApp( const MyApp());
 }
  
