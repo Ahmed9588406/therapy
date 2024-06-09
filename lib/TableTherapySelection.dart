@@ -27,17 +27,21 @@ class TableTherapySelection extends StatelessWidget {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var therapist = snapshot.data!.docs[index];
+              var imageUrl = therapist['imageUrl'] ?? 'https://via.placeholder.com/150'; // Default image URL
+              var name = therapist['name'] ?? 'Unknown';
+              var specialization = therapist['specialization'] ?? 'Unknown';
+              var rate = therapist['rate']?.toString() ?? '0';
+
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: NetworkImage(therapist['imageUrl']),
+                  backgroundImage: NetworkImage(imageUrl),
                 ),
-                title: Text(therapist['name']),
-                subtitle: Text('التخصص: ${therapist['specialization']}'),
+                title: Text(name),
+                subtitle: Text('التخصص: $specialization'),
                 trailing: Row(
-                  
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(therapist['rate'].toString()),
+                    Text(rate),
                     Icon(Icons.star, color: Colors.amber),
                   ],
                 ),
