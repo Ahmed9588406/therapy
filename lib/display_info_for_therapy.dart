@@ -107,40 +107,51 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                   Text('سعر الجلسة : ${data['salary']} ج.م', style: const TextStyle(fontSize: 18)),
                   const SizedBox(height: 20),
                   const Text('مواعيدي المتاحة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  // Add your available times UI here
                   const SizedBox(height: 20),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                       Column(
-                        children: [
-                          Text('الاثنين'),
-                          Text('03'),
-                          Text('10:00 ص'),
-                        ],
-                      ),
-                      const Column(
-                        children: [
-                          Text('الثلاثاء'),
-                          Text('04'),
-                          Text('11:00 ص'),
-                        ],
-                      ),
-                       Column(
-                        children: [
-                          Text('الاربعاء'),
-                          Text('05'),
-                          Text('12:00 م'),
-                        ],
-                      ),
-                       Column(
-                        children: [
-                          Text('الخميس'),
-                          Text('06'),
-                          Text('01:00 م'),
-                        ],
-                      ),
-                    ],
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('appointments')
+                        .where('therapistId', isEqualTo: widget.therapistId)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return const Center(child: Text('Error fetching appointments'));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(child: Text('No appointments found'));
+                      }
+
+                      var appointments = snapshot.data!.docs;
+
+                      return Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: appointments.map((appointment) {
+                          var data = appointment.data() as Map<String, dynamic>;
+                          return Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Text(data['day'] ?? 'Default Day', style: const TextStyle(fontSize: 16)),
+                                  Text(data['date'] ?? 'Default Date', style: const TextStyle(fontSize: 16)),
+                                  Text(data['time'] ?? 'Default Time', style: const TextStyle(fontSize: 16)),
+                                  IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.red),
+                                    onPressed: () {
+                                      // Handle delete appointment
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
                 ],
               ),

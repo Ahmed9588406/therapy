@@ -34,6 +34,7 @@ class TableTherapySelection extends StatelessWidget {
                 title: Text(therapist['name']),
                 subtitle: Text('التخصص: ${therapist['specialization']}'),
                 trailing: Row(
+                  
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(therapist['rate'].toString()),

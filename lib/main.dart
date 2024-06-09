@@ -187,7 +187,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               TextFormField(
                 controller: timeforsessionController,
-                decoration: const InputDecoration(hintText: 'مدة الجلسة التس تريدها'),
+                decoration: const InputDecoration(hintText: 'مدة ا��جلسة التس تريدها'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
@@ -212,3 +212,4 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
