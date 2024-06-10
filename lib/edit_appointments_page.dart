@@ -126,7 +126,7 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
     );
 
     if (selectedTime != null) {
-      for (var selectedDay in _selectedDays) { // Loop through all selected days
+      for (var selectedDay in _selectedDays) {
         String formattedDay = DateFormat.EEEE('ar').format(selectedDay);
         String formattedDate = DateFormat.yMMMMd('ar').format(selectedDay);
         String formattedTime = selectedTime.format(context);
