@@ -11,7 +11,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
-
+import 'calender_appointement.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -125,13 +125,16 @@ class _MyHomePageState extends State<MyHomePage> {
       'imageUrl': imageUrl, // Add the imageUrl to the Firestore document
     });
 
-    // Use the document ID from the newly created document
-    String therapistId = docRef.id;
+    // Use the document ID from the newly created document as therapyId
+    String therapyId = docRef.id;
 
-    // Navigate to the TherapistProfilePage with the new therapistId
+    // Update the document with the therapyId
+    await docRef.update({'therapyId': therapyId});
+
+    // Navigate to the CalendarAppointment with the new therapistId
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TherapistProfilePage(therapistId: therapistId)),
+      MaterialPageRoute(builder: (context) => CalendarAppointment(therapyId: therapyId)),
     );
   }
 
