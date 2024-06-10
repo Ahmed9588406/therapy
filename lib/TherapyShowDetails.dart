@@ -256,6 +256,42 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             ),
             // Add your available times UI here
             const SizedBox(height: 20),
+            Spacer(
+              flex: 1,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: () {
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (builder) =>
+                  //           BookingDoneForFirstSessionPage()),
+                  // );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xffD68FFF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  height: 45,
+                  width: double.infinity,
+                  child: const Center(
+                    child: Text(
+                      'احجز الان',
+                      style: TextStyle(
+                        fontFamily: "Tajawal",
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             // ElevatedButton(
             //   onPressed: () {
             //     Navigator.push(
