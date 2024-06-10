@@ -14,8 +14,8 @@ class EditAppointmentsPage extends StatefulWidget {
 class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  TimeOfDay? _selectedTime;
+  List<DateTime> _selectedDays = []; // Changed to list
+  List<TimeOfDay> _selectedTimes = []; // Changed to list
   List<Map<String, dynamic>> _appointmentCards = [];
 
   @override
@@ -77,10 +77,12 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
                   lastDay: DateTime.utc(2030, 12, 31),
                   focusedDay: _focusedDay,
                   calendarFormat: _calendarFormat,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                  selectedDayPredicate: (day) => _selectedDays.any((selectedDay) => isSameDay(selectedDay, day)),
                   onDaySelected: (selectedDay, focusedDay) {
                     setState(() {
-                      _selectedDay = selectedDay;
+                      if (!_selectedDays.any((d) => isSameDay(d, selectedDay))) {
+                        _selectedDays.add(selectedDay);
+                      }
                       _focusedDay = focusedDay;
                     });
 
@@ -102,12 +104,12 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
               ],
             ),
           ),
-          if (_selectedDay != null && _selectedTime != null)
+          if (_selectedDays.isNotEmpty && _selectedTimes.isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Selected Date: ${DateFormat.yMMMMd('ar').format(_selectedDay!)}\n'
-                'Selected Time: ${_selectedTime!.format(context)}',
+                'Selected Date: ${DateFormat.yMMMMd('ar').format(_selectedDays.last)}\n'
+                'Selected Time: ${_selectedTimes.last.format(context)}',
                 style: TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
@@ -123,36 +125,38 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
       initialTime: TimeOfDay.now(),
     );
 
-    if (selectedTime != null && _selectedDay != null) {
-      String formattedDay = DateFormat.EEEE('ar').format(_selectedDay!);
-      String formattedDate = DateFormat.yMMMMd('ar').format(_selectedDay!);
-      String formattedTime = selectedTime.format(context);
+    if (selectedTime != null) {
+      for (var selectedDay in _selectedDays) { // Loop through all selected days
+        String formattedDay = DateFormat.EEEE('ar').format(selectedDay);
+        String formattedDate = DateFormat.yMMMMd('ar').format(selectedDay);
+        String formattedTime = selectedTime.format(context);
 
-      bool alreadyExists = _appointmentCards.any((appointment) =>
-        appointment['day'] == formattedDay &&
-        appointment['date'] == formattedDate &&
-        appointment['time'] == formattedTime);
+        bool alreadyExists = _appointmentCards.any((appointment) =>
+          appointment['day'] == formattedDay &&
+          appointment['date'] == formattedDate &&
+          appointment['time'] == formattedTime &&
+          appointment['therapistId'] == widget.therapistId);
 
-      if (!alreadyExists) {
-        Map<String, dynamic> newAppointment = {
-          'day': formattedDay,
-          'date': formattedDate,
-          'time': formattedTime,
-          'therapistId': widget.therapistId, // Include therapistId when creating a new appointment
-        };
+        if (!alreadyExists) {
+          Map<String, dynamic> newAppointment = {
+            'day': formattedDay,
+            'date': formattedDate,
+            'time': formattedTime,
+            'therapistId': widget.therapistId,
+          };
 
-        setState(() {
-          _selectedTime = selectedTime;
-          _appointmentCards.add(newAppointment);
-        });
-
-        // Add to Firestore and store the document ID
-        FirebaseFirestore.instance.collection('appointments').add(newAppointment).then((docRef) {
-          newAppointment['id'] = docRef.id; // Store the Firestore document ID
           setState(() {
-            _appointmentCards[_appointmentCards.length - 1] = newAppointment;
+            _selectedTimes.add(selectedTime);
+            _appointmentCards.add(newAppointment);
           });
-        });
+
+          FirebaseFirestore.instance.collection('appointments').add(newAppointment).then((docRef) {
+            newAppointment['id'] = docRef.id;
+            setState(() {
+              _appointmentCards[_appointmentCards.length - 1] = newAppointment;
+            });
+          });
+        }
       }
     }
   }

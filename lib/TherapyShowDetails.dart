@@ -266,7 +266,13 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             const SizedBox(height: 20),
             Expanded(
               child: showAppointments
-                  ? ListView.builder(
+                  ? GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // Number of columns
+                        crossAxisSpacing: 10, // Horizontal space between cards
+                        mainAxisSpacing: 10, // Vertical space between cards
+                        childAspectRatio: 3 / 2, // Aspect ratio of the cards
+                      ),
                       itemCount: appointments.length,
                       itemBuilder: (context, index) {
                         return GestureDetector(
@@ -295,13 +301,12 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                             );
                           },
                           child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8.0),
-                            padding: const EdgeInsets.all(16.0),
                             decoration: BoxDecoration(
                               color: Color(0xFFD68FFF),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   appointments[index]['day'],
@@ -347,6 +352,39 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                         ),
                       ),
                     ),
+            ),
+            const SizedBox(height: 20),
+            Spacer(
+              flex: 1,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: () {
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (builder) =>
+                  //           BookingDoneForFirstSessionPage()),
+                  // );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xffD68FFF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'احجز الآن',
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
