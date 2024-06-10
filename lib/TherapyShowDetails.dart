@@ -26,7 +26,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
     var fetchedAppointments = snapshot.docs.map((doc) => {
       'date': doc['date'],
       'time': doc['time'],
-      'day': doc['day'],  // Add this line to fetch the 'day' attribute
+      'day': doc['day'],
     }).toList();
 
     setState(() {
@@ -37,21 +37,21 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set the background color to white
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
           widget.therapist['name'],
           style: const TextStyle(
             fontFamily: 'Tajawal',
-            fontSize: 23, // Set the font size
-            fontWeight: FontWeight.bold, // Make the text bold
+            fontSize: 23,
+            fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios), // Use the iOS-style back arrow
+          icon: Icon(Icons.arrow_back_ios),
           onPressed: () {
-            Navigator.of(context).pop(); // Go back to the previous screen
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -60,8 +60,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, bottom: 8, top: 30),
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8, top: 30),
               child: CircleAvatar(
                 radius: 90,
                 backgroundColor: Colors.grey,
@@ -199,8 +198,6 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                 ),
               ],
             ),
-            // Text('مدة الجلسة التي تريدها : ${widget.therapist['timeforsession']} ساعة',
-            //     style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -212,8 +209,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
                     decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -228,8 +224,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Tajawal',
-                        color:
-                            showAppointments ? Colors.grey : Color(0XFFD68FFF),
+                        color: showAppointments ? Colors.grey : Color(0XFFD68FFF),
                         decoration: TextDecoration.none,
                       ),
                     ),
@@ -245,60 +240,114 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 8.0),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                    decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: showAppointments
-                              ? const Color(0XFFD68FFF)
-                              : Colors.transparent,
+                          color: Color(0XFFD68FFF),
                           width: 0.5,
                         ),
                       ),
                     ),
                     child: Text(
-                      ' التعليقات',
+                      'تفاصيل المعالج',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Tajawal',
-                        color:
-                            showAppointments ? Color(0XFFD68FFF) : Colors.grey,
+                        color: showAppointments ? Color(0XFFD68FFF) : Colors.grey,
                         decoration: TextDecoration.none,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(
-                  width: 20,
-                ),
               ],
             ),
-            if (showAppointments)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: appointments.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text('التاريخ: ${appointments[index]['date']}'),
-                      subtitle: Text('الوقت: ${appointments[index]['time']} - اليوم: ${appointments[index]['day']}'),
-                    );
-                  },
-                ),
-              ),
-            // Add your available times UI here
             const SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) => CalendarAppointment()),
-            //     );
-            //   },
-            //   child: Text('View Calendar Appointment'),
-            // ),
+            Expanded(
+              child: showAppointments
+                  ? ListView.builder(
+                      itemCount: appointments.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            // Handle the tap event to display the details
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('تفاصيل الموعد'),
+                                  content: Text(
+                                    'التاريخ: ${appointments[index]['date']}\n'
+                                    'اليوم: ${appointments[index]['day']}\n'
+                                    'الوقت: ${appointments[index]['time']}',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: Text('إغلاق'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFD68FFF),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  appointments[index]['day'],
+                                  style: TextStyle(
+                                    fontFamily: 'Tajawal',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 8.0),
+                                Text(
+                                  appointments[index]['date'],
+                                  style: TextStyle(
+                                    fontFamily: 'Tajawal',
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                SizedBox(height: 8.0),
+                                Text(
+                                  appointments[index]['time'],
+                                  style: TextStyle(
+                                    fontFamily: 'Tajawal',
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Text(
+                        'اختر "المواعيد المتاحه" لعرض المواعيد',
+                        style: TextStyle(
+                          fontFamily: 'Tajawal',
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+            ),
           ],
         ),
       ),
