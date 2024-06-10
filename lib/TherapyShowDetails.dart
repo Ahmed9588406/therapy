@@ -12,6 +12,27 @@ class TherapyShowDetails extends StatefulWidget {
 
 class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   bool showAppointments = false;
+  List<Map<String, dynamic>> appointments = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAppointments();
+  }
+
+  Future<void> _fetchAppointments() async {
+    var collection = FirebaseFirestore.instance.collection('appointments');
+    var snapshot = await collection.where('therapistId', isEqualTo: widget.therapist.id).get();
+    var fetchedAppointments = snapshot.docs.map((doc) => {
+      'date': doc['date'],
+      'time': doc['time'],
+      'day': doc['day'],  // Add this line to fetch the 'day' attribute
+    }).toList();
+
+    setState(() {
+      appointments = fetchedAppointments;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -254,6 +275,18 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                 ),
               ],
             ),
+            if (showAppointments)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: appointments.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text('التاريخ: ${appointments[index]['date']}'),
+                      subtitle: Text('الوقت: ${appointments[index]['time']} - اليوم: ${appointments[index]['day']}'),
+                    );
+                  },
+                ),
+              ),
             // Add your available times UI here
             const SizedBox(height: 20),
             // ElevatedButton(

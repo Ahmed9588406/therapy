@@ -438,6 +438,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                             ),
                           ),
                         ),
+                        
                         const SizedBox(
                           width: 10,
                         ),
@@ -514,7 +515,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                                   children: [
                                     Text(data['day'] ?? 'اليوم الافتراضي',
                                         style: const TextStyle(fontSize: 16)),
-                                    Text(data['date'] ?? 'التاريخ الافتراضي',
+                                    Text(data['date'] ?? 'التاريخ الافت',
                                         style: const TextStyle(fontSize: 16)),
                                     Text(data['time'] ?? 'الوقت الافتراضي',
                                         style: const TextStyle(fontSize: 16)),
@@ -544,7 +545,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (BuildContext) {
-                                return EditAppointmentsPage();
+                                return EditAppointmentsPage(therapistId: widget.therapistId);
                               },
                             ),
                           );
@@ -645,3 +646,4 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     );
   }
 }
+

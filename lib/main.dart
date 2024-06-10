@@ -128,6 +128,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // Use the document ID from the newly created document
     String therapistId = docRef.id;
 
+    // Update the document with the therapistId
+    await docRef.update({'therapistId': therapistId});
+
     // Navigate to the TherapistProfilePage with the new therapistId
     Navigator.push(
       context,

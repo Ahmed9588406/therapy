@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class EditAppointmentsPage extends StatefulWidget {
-  const EditAppointmentsPage({super.key});
+  final String therapistId;
+  const EditAppointmentsPage({super.key, required this.therapistId});
 
   @override
   State<EditAppointmentsPage> createState() => _EditAppointmentsPageState();
@@ -24,14 +25,14 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
   }
 
   Future<void> _loadAppointmentsFromFirestore() async {
-    var collection = FirebaseFirestore.instance.collection('addappointments');
-    var snapshot = await collection.get();
+    var collection = FirebaseFirestore.instance.collection('appointments');
+    var snapshot = await collection.where('therapistId', isEqualTo: widget.therapistId).get();
     for (var doc in snapshot.docs) {
       Map<String, dynamic> appointment = {
         'day': doc['day'],
         'date': doc['date'],
         'time': doc['time'],
-        'id': doc.id, // Store Firestore document ID
+        'id': doc.id,
       };
       setState(() {
         _appointmentCards.add(appointment);
@@ -51,8 +52,8 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
           Row(
             children: [
             Padding(
-              padding: const EdgeInsets.only(left: 350),
-              child: IconButton(             //padding: EdgeInsets.only(right: 30),
+              padding: const EdgeInsets.only(left: 16), // Reduced padding
+              child: IconButton(
                 icon: const Icon(
                   Icons.arrow_back_ios,
                   color: Colors.black,
@@ -65,36 +66,52 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
           ])
         ],
       ),
-      body: ListView(
+      body: Column(
         children: [
-          TableCalendar(
-            locale: 'ar',
-            firstDay: DateTime.utc(2021, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _focusedDay,
-            calendarFormat: _calendarFormat,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
+          Expanded(
+            child: ListView(
+              children: [
+                TableCalendar(
+                  locale: 'ar',
+                  firstDay: DateTime.utc(2021, 1, 1),
+                  lastDay: DateTime.utc(2030, 12, 31),
+                  focusedDay: _focusedDay,
+                  calendarFormat: _calendarFormat,
+                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                  onDaySelected: (selectedDay, focusedDay) {
+                    setState(() {
+                      _selectedDay = selectedDay;
+                      _focusedDay = focusedDay;
+                    });
 
-              _showTimePicker(context);
-            },
+                    _showTimePicker(context);
+                  },
+                ),
+                ..._appointmentCards.map((appointment) => Card(
+                  color: Color.fromARGB(255, 235, 207, 242), // Set the background color here
+                  child: ListTile(
+                    title: Text(
+                      'اليوم: ${appointment['day']}', style: TextStyle(fontFamily: 'Tajawal'),),
+                    subtitle: Text('التاريخ: ${appointment['date']} الوقت: ${appointment['time']}', style: TextStyle(fontFamily: 'Tajawal')),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () => _deleteAppointment(appointment),
+                    ),
+                  ),
+                )).toList(),
+              ],
+            ),
           ),
-          ..._appointmentCards.map((appointment) => Card(
-            color: Color.fromARGB(255, 235, 207, 242), // Set the background color here
-            child: ListTile(
-              title: Text(
-                'اليوم: ${appointment['day']}', style: TextStyle(fontFamily: 'Tajawal'),),
-              subtitle: Text('التاريخ: ${appointment['date']} الوقت: ${appointment['time']}', style: TextStyle(fontFamily: 'Tajawal')),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () => _deleteAppointment(appointment),
+          if (_selectedDay != null && _selectedTime != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Selected Date: ${DateFormat.yMMMMd('ar').format(_selectedDay!)}\n'
+                'Selected Time: ${_selectedTime!.format(context)}',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
               ),
             ),
-          )).toList(),
         ],
       ),
     );
@@ -121,6 +138,7 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
           'day': formattedDay,
           'date': formattedDate,
           'time': formattedTime,
+          'therapistId': widget.therapistId, // Include therapistId when creating a new appointment
         };
 
         setState(() {
