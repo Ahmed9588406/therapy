@@ -1,13 +1,16 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:therapy/edit_appointments_page.dart';
 
 class TherapistProfilePage extends StatefulWidget {
   final String therapistId;
 
-  const TherapistProfilePage({Key? key, required this.therapistId}) : super(key: key);
+  const TherapistProfilePage({Key? key, required this.therapistId})
+      : super(key: key);
 
   @override
   _TherapistProfilePageState createState() => _TherapistProfilePageState();
@@ -29,7 +32,8 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     if (pickedFile != null) {
       File imageFile = File(pickedFile.path);
       // Upload image to Firebase Storage
-      String fileName = 'therapists/${widget.therapistId}/${DateTime.now().millisecondsSinceEpoch.toString()}';
+      String fileName =
+          'therapists/${widget.therapistId}/${DateTime.now().millisecondsSinceEpoch.toString()}';
       FirebaseStorage storage = FirebaseStorage.instance;
       try {
         await storage.ref(fileName).putFile(imageFile);
@@ -38,30 +42,137 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           imageUrl = downloadUrl;
         });
         // Update Firestore document
-        FirebaseFirestore.instance.collection('therapists').doc(widget.therapistId).update({'imageUrl': downloadUrl});
+        FirebaseFirestore.instance
+            .collection('therapists')
+            .doc(widget.therapistId)
+            .update({'imageUrl': downloadUrl});
       } catch (e) {
         print(e); // Handle errors
       }
     }
   }
 
+  Future<void> _showEditDialog(String field, String currentValue) async {
+    TextEditingController _controller =
+        TextEditingController(text: currentValue);
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('تعديل'),
+          content: TextFormField(
+            controller: _controller,
+            decoration: const InputDecoration(labelText: 'القيمة الجديدة'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('therapists')
+                    .doc(widget.therapistId)
+                    .update({field: _controller.text});
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+              child: const Text('حفظ'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  int _selectedIndex = 0;
+  int index = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext) {
+              return TherapistProfilePage(
+                therapistId: '',
+              );
+              // return TherapistSettingsPage();
+            },
+          ),
+        );
+        break;
+
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext) {
+              return TherapistProfilePage(
+                therapistId: '',
+              );
+              // return TherapistNotificationsEmptyPage();
+            },
+          ),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext) {
+              return TherapistProfilePage(
+                therapistId: '',
+              );
+              // return TherapistSessionsEmpty();
+            },
+          ),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext) {
+              return TherapistProfilePage(
+                therapistId: '',
+              );
+              // return ProfileForTherapistFlowPage();
+            },
+          ),
+        );
+        break;
+    }
+  }
+
+  bool showAppointments = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Therapist Profile'),
-      ),
+      appBar: AppBar(),
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection('therapists').doc(widget.therapistId).get(),
+        future: FirebaseFirestore.instance
+            .collection('therapists')
+            .doc(widget.therapistId)
+            .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching data'));
+            return const Center(child: Text('خطأ في جلب البيانات'));
           }
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text('No data found'));
+            return const Center(child: Text('لا توجد بيانات'));
           }
 
           var data = snapshot.data!.data() as Map<String, dynamic>;
@@ -69,95 +180,467 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Stack(
-                      alignment: Alignment.bottomRight,
+              child: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          GestureDetector(
+                            onTap: pickImage,
+                            child: CircleAvatar(
+                              radius: 80,
+                              backgroundImage: imageUrl.isNotEmpty
+                                  ? NetworkImage(imageUrl)
+                                  : null,
+                              child: imageUrl.isEmpty
+                                  ? const Icon(Icons.person, size: 100)
+                                  : null,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: -10,
+                            left: 100,
+                            child: IconButton(
+                              icon: const Icon(Icons.add_a_photo,
+                                  color: Colors.black),
+                              onPressed: pickImage,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          const TextSpan(
+                            text: 'الاسم : ',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextSpan(
+                            text: data['name'],
+                            style: const TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xff494649),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          const TextSpan(
+                            text: 'التخصص : ',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextSpan(
+                            text: data['specialization'],
+                            style: const TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xff494649),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
                       children: [
-                        GestureDetector(
-                          onTap: pickImage,
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
-                            child: imageUrl.isEmpty ? const Icon(Icons.person, size: 50) : null,
+                        const Text(
+                          'التقييم : ',
+                          style: TextStyle(
+                            fontFamily: 'Tajawal',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
                           ),
                         ),
+                        for (int i = 0; i < int.parse(data['rate']); i++)
+                          const Icon(Icons.star, color: Colors.amber),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          const TextSpan(
+                            text: 'البلد : ',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextSpan(
+                            text: data['country'],
+                            style: const TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xff494649),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          const TextSpan(
+                            text: 'عدد الجلسات : ',
+                            style: TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextSpan(
+                            text: data['sessionsNumber'].toString(),
+                            style: const TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xff494649),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              const TextSpan(
+                                text: 'مدة الجلسة التي تريدها : ',
+                                style: TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '${data['timeforsession']} ساعة',
+                                style: const TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  color: Color(0xff494649),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
                         IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: pickImage,
+                          icon:
+                              const Icon(Icons.edit, color: Color(0xffD68FFF)),
+                          onPressed: () {
+                            _showEditDialog('timeforsession',
+                                data['timeforsession'].toString());
+                          },
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('الاسم : ${data['name']}', style: const TextStyle(fontSize: 18)),
-                  Text('التخصص : ${data['specialization']}', style: const TextStyle(fontSize: 18)),
-                  Row(
-                    children: [
-                      const Text('التقيم : ', style: TextStyle(fontSize: 18)),
-                      for (int i = 0; i < int.parse(data['rate']); i++)
-                        const Icon(Icons.star, color: Colors.amber),
-                    ],
-                  ),
-                  Text('البلد : ${data['country']}', style: const TextStyle(fontSize: 18)),
-                  Text('عدد الجلسات : ${data['sessionsNumber']}', style: const TextStyle(fontSize: 18)),
-                  Text('مدة الجلسة التي تريدها : ${data['timeforsession']} ساعة', style: const TextStyle(fontSize: 18)),
-                  Text('سعر الجلسة : ${data['salary']} ج.م', style: const TextStyle(fontSize: 18)),
-                  const SizedBox(height: 20),
-                  const Text('مواعيدي المتاحة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('appointments')
-                        .where('therapistId', isEqualTo: widget.therapistId)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return const Center(child: Text('Error fetching appointments'));
-                      }
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(child: Text('No appointments found'));
-                      }
-
-                      var appointments = snapshot.data!.docs;
-
-                      return Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: appointments.map((appointment) {
-                          var data = appointment.data() as Map<String, dynamic>;
-                          return Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Text(data['day'] ?? 'Default Day', style: const TextStyle(fontSize: 16)),
-                                  Text(data['date'] ?? 'Default Date', style: const TextStyle(fontSize: 16)),
-                                  Text(data['time'] ?? 'Default Time', style: const TextStyle(fontSize: 16)),
-                                  IconButton(
-                                    icon: const Icon(Icons.close, color: Colors.red),
-                                    onPressed: () {
-                                      // Handle delete appointment
-                                    },
-                                  ),
-                                ],
+                    Row(
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              const TextSpan(
+                                text: 'سعر الجلسة : ',
+                                style: TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '${data['salary']} ج.م',
+                                style: const TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  color: Color(0xff494649),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.edit, color: Color(0xffD68FFF)),
+                          onPressed: () {
+                            _showEditDialog(
+                                'salary', data['salary'].toString());
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              showAppointments = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 8.0),
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0XFFD68FFF),
+                                  width: 0.5,
+                                ),
                               ),
                             ),
+                            child: Text(
+                              'المواعيد المتاحه',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Tajawal',
+                                color: showAppointments
+                                    ? Colors.grey
+                                    : Color(0XFFD68FFF),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              showAppointments = true;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 8.0),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: showAppointments
+                                      ? const Color(0XFFD68FFF)
+                                      : Colors.transparent,
+                                  width: 0.5,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              ' التعليقات',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Tajawal',
+                                color: showAppointments
+                                    ? Color(0XFFD68FFF)
+                                    : Colors.grey,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('appointment')
+                          .where('therapistId', isEqualTo: widget.therapistId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return const Center(
+                              child: Text('خطأ في جلب المواعيد'));
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(child: Text('لا يوجد مواعيد'));
+                        }
+
+                        var appointments = snapshot.data!.docs;
+
+                        return Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: appointments.map((appointment) {
+                            var data =
+                                appointment.data() as Map<String, dynamic>;
+                            return Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    Text(data['day'] ?? 'اليوم الافتراضي',
+                                        style: const TextStyle(fontSize: 16)),
+                                    Text(data['date'] ?? 'التاريخ الافتراضي',
+                                        style: const TextStyle(fontSize: 16)),
+                                    Text(data['time'] ?? 'الوقت الافتراضي',
+                                        style: const TextStyle(fontSize: 16)),
+                                    IconButton(
+                                      icon: const Icon(Icons.close,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        FirebaseFirestore.instance
+                                            .collection('appointment')
+                                            .doc(appointment.id)
+                                            .delete();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (BuildContext) {
+                                return EditAppointmentsPage();
+                              },
+                            ),
                           );
-                        }).toList(),
-                      );
-                    },
-                  ),
-                ],
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 8.0),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'اضف وتعديل الميعاد',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Tajawal',
+                                  color: Color(0XFFD68FFF),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(bottom: 8, left: 5),
+                                child: Icon(
+                                  Icons.date_range_outlined,
+                                  color: Color(0XFFD68FFF),
+                                  size: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
         },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Color(0xFF1D1B1E),
+        selectedItemColor: Color(0xFFD68FFF),
+        unselectedItemColor: Color(0xFFE8E0E5),
+        selectedFontSize: 14,
+        unselectedFontSize: 14,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.person_outline_outlined,
+              color:
+                  _selectedIndex == 0 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+              size: 27,
+            ),
+            label: 'الملف الشخصي',
+            backgroundColor:
+                _selectedIndex == 0 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.date_range_outlined,
+              color:
+                  _selectedIndex == 1 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+              size: 23,
+            ),
+            label: 'الجلسات',
+            backgroundColor:
+                _selectedIndex == 1 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.notifications_none,
+              color:
+                  _selectedIndex == 2 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+              size: 27,
+            ),
+            label: 'اشعارات',
+            backgroundColor:
+                _selectedIndex == 2 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.settings_outlined,
+              color:
+                  _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5), 
+              size: 27,
+            ),
+            label: 'الاعدادات',
+            backgroundColor:
+                _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+          ),
+        ],
       ),
     );
   }
