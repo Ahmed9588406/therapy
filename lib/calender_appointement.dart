@@ -4,6 +4,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CalendarAppointment extends StatefulWidget {
+  final String therapyId;
+
+  CalendarAppointment({Key? key, required this.therapyId}) : super(key: key);
+
   @override
   _CalendarAppointmentState createState() => _CalendarAppointmentState();
 }
@@ -90,9 +94,7 @@ class _CalendarAppointmentState extends State<CalendarAppointment> {
       setState(() {
         _selectedTime = picked;
       });
-      // Check if both date and time are selected
       if (_selectedDay != null && _selectedTime != null) {
-        // Format the DateTime object
         DateTime appointmentDateTime = DateTime(
           _selectedDay!.year,
           _selectedDay!.month,
@@ -100,9 +102,9 @@ class _CalendarAppointmentState extends State<CalendarAppointment> {
           _selectedTime!.hour,
           _selectedTime!.minute,
         );
-        // Save to Firestore
         FirebaseFirestore.instance.collection('appointments').add({
           'date': appointmentDateTime,
+          'therapyId': widget.therapyId, // Add the therapyId to the Firestore document
         });
       }
     }

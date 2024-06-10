@@ -12,6 +12,23 @@ class TherapyShowDetails extends StatefulWidget {
 
 class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   bool showAppointments = false;
+  List<DocumentSnapshot> appointments = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAppointments();
+  }
+
+  void fetchAppointments() async {
+    var fetchedAppointments = await FirebaseFirestore.instance
+        .collection('appointments')
+        .where('therapyId', isEqualTo: widget.therapist.id)
+        .get();
+    setState(() {
+      appointments = fetchedAppointments.docs;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -266,6 +283,19 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             //   },
             //   child: Text('View Calendar Appointment'),
             // ),
+            if (showAppointments)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: appointments.length,
+                  itemBuilder: (context, index) {
+                    var appointment = appointments[index];
+                    DateTime date = (appointment['date'] as Timestamp).toDate();
+                    return ListTile(
+                      title: Text('Appointment on ${date.toString()}'),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
