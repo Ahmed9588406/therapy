@@ -1,15 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
-import 'display_info_for_therapy.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'TableTherapySelection.dart';
-import 'calender_appointement.dart';
+import 'display_info_for_therapy.dart';
 
 
 void main() async{
@@ -21,14 +22,13 @@ void main() async{
 }
  
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  
+  const MyApp({super.key});  
  
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         
@@ -36,6 +36,16 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      locale: const Locale('ar', ''), // Set Arabic as the default locale
+      supportedLocales: [
+        const Locale('ar', ''), // Arabic
+        const Locale('en', ''), // English
+      ],
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }
@@ -187,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               TextFormField(
                 controller: timeforsessionController,
-                decoration: const InputDecoration(hintText: 'مدة ا��جلسة التس تريدها'),
+                decoration: const InputDecoration(hintText: 'مدة اجلسة التس تريدها'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
@@ -212,4 +222,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
