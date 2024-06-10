@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'notification_display_for_therapy.dart';
 
 class TherapyShowDetails extends StatefulWidget {
   final QueryDocumentSnapshot therapist;
@@ -13,6 +14,7 @@ class TherapyShowDetails extends StatefulWidget {
 class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   bool showAppointments = false;
   List<Map<String, dynamic>> appointments = [];
+  Map<String, dynamic>? selectedAppointment; // Variable to store selected appointment
 
   @override
   void initState() {
@@ -32,6 +34,46 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
     setState(() {
       appointments = fetchedAppointments;
     });
+  }
+
+  void _bookAppointment() async {
+    if (selectedAppointment != null) {
+      // Create a new document in the 'users' collection
+      DocumentReference docRef = await FirebaseFirestore.instance.collection('users').add({
+        'date': selectedAppointment!['date'],
+        'time': selectedAppointment!['time'],
+        'day': selectedAppointment!['day'],
+      });
+
+      // Update the newly created document with its own document ID
+      await docRef.update({
+        'userId': docRef.id, // Setting the 'userId' field to the document's ID
+      });
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('تأكيد الحجز'),
+            content: Text(
+              'تم حجز موعدك بنجاح!\n'
+              'التاريخ: ${selectedAppointment!['date']}\n'
+              'اليوم: ${selectedAppointment!['day']}\n'
+              'الوقت: ${selectedAppointment!['time']}\n'
+              
+            ),
+            actions: [
+              TextButton(
+                child: Text('إغلاق'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -54,6 +96,25 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             Navigator.of(context).pop();
           },
         ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => NotificationDisplayForTherapy(appointments: []),
+                ),
+              );
+            },
+            child: Text(
+              'اظهر اشعراتي',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Tajawal',
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -219,7 +280,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       ),
                     ),
                     child: Text(
-                      'المواعيد المتاحه',
+                      'التعليقت',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -250,7 +311,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       ),
                     ),
                     child: Text(
-                      'تفاصيل المعالج',
+                      'المواعيد المتاحه',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -277,28 +338,9 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       itemBuilder: (context, index) {
                         return GestureDetector(
                           onTap: () {
-                            // Handle the tap event to display the details
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text('تفاصيل الموعد'),
-                                  content: Text(
-                                    'التاريخ: ${appointments[index]['date']}\n'
-                                    'اليوم: ${appointments[index]['day']}\n'
-                                    'الوقت: ${appointments[index]['time']}',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('إغلاق'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                            setState(() {
+                              selectedAppointment = appointments[index];
+                            });
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -360,14 +402,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: GestureDetector(
-                onTap: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //       builder: (builder) =>
-                  //           BookingDoneForFirstSessionPage()),
-                  // );
-                },
+                onTap: _bookAppointment,
                 child: Container(
                   decoration: BoxDecoration(
                     color: Color(0xffD68FFF),
