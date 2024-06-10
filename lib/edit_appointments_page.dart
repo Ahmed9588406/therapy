@@ -5,7 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 class EditAppointmentsPage extends StatefulWidget {
   final String therapistId;
-  const EditAppointmentsPage({super.key, required this.therapistId});
+  const EditAppointmentsPage({Key? key, required this.therapistId}) : super(key: key);
 
   @override
   State<EditAppointmentsPage> createState() => _EditAppointmentsPageState();
@@ -14,9 +14,10 @@ class EditAppointmentsPage extends StatefulWidget {
 class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
-  List<DateTime> _selectedDays = []; // Changed to list
-  List<TimeOfDay> _selectedTimes = []; // Changed to list
+  List<DateTime> _selectedDays = [];
+  List<TimeOfDay> _selectedTimes = [];
   List<Map<String, dynamic>> _appointmentCards = [];
+  List<Widget> _selectedDateTimeWidgets = [];
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         leading: const Padding(
           padding: EdgeInsets.all(8.0),
           child: Text(''),
@@ -51,19 +52,20 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
         actions: <Widget>[
           Row(
             children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16), // Reduced padding
-              child: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.black,
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               ),
-            ),
-          ])
+            ],
+          ),
         ],
       ),
       body: Column(
@@ -90,7 +92,7 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
                   },
                 ),
                 ..._appointmentCards.map((appointment) => Card(
-                  color: Color.fromARGB(255, 235, 207, 242), // Set the background color here
+                  color: Color.fromARGB(255, 235, 207, 242),
                   child: ListTile(
                     title: Text(
                       'اليوم: ${appointment['day']}', style: TextStyle(fontFamily: 'Tajawal'),),
@@ -101,19 +103,12 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
                     ),
                   ),
                 )).toList(),
+                Wrap(
+                  children: _selectedDateTimeWidgets,
+                ),
               ],
             ),
           ),
-          if (_selectedDays.isNotEmpty && _selectedTimes.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Selected Date: ${DateFormat.yMMMMd('ar').format(_selectedDays.last)}\n'
-                'Selected Time: ${_selectedTimes.last.format(context)}',
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-            ),
         ],
       ),
     );
@@ -126,13 +121,13 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
     );
 
     if (selectedTime != null) {
+      List<Map<String, dynamic>> newAppointments = [];
       for (var selectedDay in _selectedDays) {
         String formattedDay = DateFormat.EEEE('ar').format(selectedDay);
         String formattedDate = DateFormat.yMMMMd('ar').format(selectedDay);
         String formattedTime = selectedTime.format(context);
 
         bool alreadyExists = _appointmentCards.any((appointment) =>
-          appointment['day'] == formattedDay &&
           appointment['date'] == formattedDate &&
           appointment['time'] == formattedTime &&
           appointment['therapistId'] == widget.therapistId);
@@ -145,20 +140,62 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
             'therapistId': widget.therapistId,
           };
 
-          setState(() {
-            _selectedTimes.add(selectedTime);
-            _appointmentCards.add(newAppointment);
-          });
+          newAppointments.add(newAppointment);
+        }
+      }
 
+      if (newAppointments.isNotEmpty) {
+        setState(() {
+          _selectedTimes.add(selectedTime);
+          _appointmentCards.addAll(newAppointments);
+          _selectedDateTimeWidgets.addAll(newAppointments.map((appointment) =>
+            _buildSelectedDateTimeWidget(appointment['day'], appointment['date'], appointment['time'])).toList());
+        });
+
+        newAppointments.forEach((newAppointment) {
           FirebaseFirestore.instance.collection('appointments').add(newAppointment).then((docRef) {
             newAppointment['id'] = docRef.id;
             setState(() {
-              _appointmentCards[_appointmentCards.length - 1] = newAppointment;
+              int index = _appointmentCards.indexWhere((element) =>
+                element['day'] == newAppointment['day'] &&
+                element['date'] == newAppointment['date'] &&
+                element['time'] == newAppointment['time']);
+              if (index != -1) {
+                _appointmentCards[index] = newAppointment;
+              }
             });
           });
-        }
+        });
       }
+
+      // Clear selected days after processing to avoid duplicates on next selection
+      _selectedDays.clear();
     }
+  }
+
+  Widget _buildSelectedDateTimeWidget(String day, String date, String time) {
+    return Card(
+      margin: EdgeInsets.all(4.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Text(day, style: TextStyle(fontFamily: 'Tajawal', fontSize: 16)),
+            Text(date, style: TextStyle(fontFamily: 'Tajawal', fontSize: 16)),
+            Text(time, style: TextStyle(fontFamily: 'Tajawal', fontSize: 16)),
+            IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                setState(() {
+                  _selectedDateTimeWidgets.removeWhere((widget) =>
+                    widget.key == Key('$day-$date-$time'));
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _deleteAppointment(Map<String, dynamic> appointment) {
@@ -166,7 +203,6 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
       _appointmentCards.remove(appointment);
     });
 
-    // Delete from Firestore using the stored document ID
     FirebaseFirestore.instance.collection('appointments').doc(appointment['id']).delete();
   }
 }
