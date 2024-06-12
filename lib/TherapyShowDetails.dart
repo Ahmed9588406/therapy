@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'add_user_comments.dart'; // Import the AddUserComment widget
 import 'booking_done.dart'; // Import the BookingDoneForFirstSessionPage class
 
 class TherapyShowDetails extends StatefulWidget {
@@ -16,11 +17,13 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   bool showAppointments = false;
   List<Map<String, dynamic>> appointments = [];
   Map<String, dynamic>? selectedAppointment;
+  List<Map<String, dynamic>> userComments = [];
 
   @override
   void initState() {
     super.initState();
     _fetchAppointments();
+    _fetchUserComments();
   }
 
   Future<void> _fetchAppointments() async {
@@ -38,6 +41,24 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
 
     setState(() {
       appointments = fetchedAppointments;
+    });
+  }
+
+  Future<void> _fetchUserComments() async {
+    var collection = FirebaseFirestore.instance.collection('addUserComment');
+    var snapshot = await collection
+        .where('therapistId', isEqualTo: widget.therapist.id)
+        .get();
+    var fetchedComments = snapshot.docs
+        .map((doc) => {
+              'comment': doc['comment'],
+              'rate': doc['rate'],
+              'imageUrl': doc['imageUrl'],
+            })
+        .toList();
+
+    setState(() {
+      userComments = fetchedComments;
     });
   }
 
@@ -275,7 +296,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       ),
                     ),
                     child: Text(
-                      'المواعيد المتاحة',
+                      'التعليقات',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -308,7 +329,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       ),
                     ),
                     child: Text(
-                      'التعليقات',
+                      'المواعيد المتاحة',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -325,17 +346,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             const SizedBox(height: 20),
             Expanded(
                 child: showAppointments
-                    ? const Center(
-                        child: Text(
-                          'اختر "المواعيد المتاحه" لعرض المواعيد',
-                          style: TextStyle(
-                            fontFamily: 'Tajawal',
-                            fontSize: 16,
-                            color: Colors.black,
-                          ),
-                        ),
-                      )
-                    : GridView.builder(
+                    ? GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2, // Number of columns
@@ -396,6 +407,20 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                                   ],
                                 ),
                               ),
+                            ),
+                          );
+                        },
+                      )
+                    : ListView.builder(
+                        itemCount: userComments.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              title: Text(userComments[index]['comment']),
+                              subtitle: Text('Rating: ${userComments[index]['rate']}'),
+                              leading: userComments[index]['imageUrl'] != null
+                                  ? Image.network(userComments[index]['imageUrl'])
+                                  : null,
                             ),
                           );
                         },
@@ -462,6 +487,18 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => addUserComment(therapistId: widget.therapist.id),
+            ),
+          );
+        },
+        tooltip: 'Add Comment',
+        child: const Icon(Icons.add),
       ),
     );
   }

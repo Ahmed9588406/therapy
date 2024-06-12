@@ -653,3 +653,4 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     );
   }
 }
+
