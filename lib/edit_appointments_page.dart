@@ -17,7 +17,10 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
   DateTime _focusedDay = DateTime.now();
   List<DateTime> _selectedDays = [];
   List<TimeOfDay> _selectedTimes = [];
+  List<DateTime> _selectedDays = [];
+  List<TimeOfDay> _selectedTimes = [];
   List<Map<String, dynamic>> _appointmentCards = [];
+  List<Widget> _selectedDateTimeWidgets = [];
   List<Widget> _selectedDateTimeWidgets = [];
 
   @override
@@ -53,6 +56,7 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
       appBar: AppBar(
         leading: const Padding(
           padding: EdgeInsets.all(8.0),
@@ -122,6 +126,8 @@ class _EditAppointmentsPageState extends State<EditAppointmentsPage> {
     );
 
     if (selectedTime != null) {
+      List<Map<String, dynamic>> newAppointments = [];
+      for (var selectedDay in _selectedDays) {
       List<Map<String, dynamic>> newAppointments = [];
       for (var selectedDay in _selectedDays) {
         String formattedDay = DateFormat.EEEE('ar').format(selectedDay);

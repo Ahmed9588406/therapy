@@ -79,6 +79,25 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
             Navigator.of(context).pop();
           },
         ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => NotificationDisplayForTherapy(appointments: []),
+                ),
+              );
+            },
+            child: Text(
+              'اظهر اشعراتي',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Tajawal',
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -246,7 +265,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       ),
                     ),
                     child: Text(
-                      'المواعيد المتاحه',
+                      'التعليقت',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
