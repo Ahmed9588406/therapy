@@ -99,11 +99,20 @@ class _addUserCommentState extends State<addUserComment> {
       imageUrl = await _uploadImage(_image!); // Upload the image and get the URL
     }
 
+    // Fetch user details
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc('your_user_doc_id').get();
+    Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+    String userId = userData?['userId'] ?? '';
+    String therapistId = userData?['therapistId'] ?? '';
+
+    // Add to addUserComment collection
     CollectionReference collRef = FirebaseFirestore.instance.collection('addUserComment');
     await collRef.add({
       'comment': commentController.text,
       'rate': rateController.text,
-      'imageUrl': imageUrl, // Add the imageUrl to the Firestore document
+      'imageUrl': imageUrl,
+      'userId': userId,
+      'therapistId': therapistId,
     });
 
     // Optionally, you can handle navigation or user feedback here
@@ -112,7 +121,7 @@ class _addUserCommentState extends State<addUserComment> {
   Future<String?> getUserId() async {
     try {
       var collection = FirebaseFirestore.instance.collection('addUserComment');
-      var doc = await collection.doc('specific_doc_id').get(); // You need to know the document ID or have a query to get it
+      var doc = await collection.doc('users').get(); // You need to know the document ID or have a query to get it
       return doc.data()?['usertId']; // Assuming 'therapistId' is a field in the document
     } catch (e) {
       print("Failed to fetch therapist ID: $e");

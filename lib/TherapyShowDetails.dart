@@ -43,13 +43,23 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
 
   Future<void> _bookAppointment() async {
     if (selectedAppointment != null) {
-      await FirebaseFirestore.instance.collection('users').add({
+      // Add the appointment to the 'users' collection and capture the DocumentReference
+      DocumentReference appointmentRef = await FirebaseFirestore.instance.collection('users').add({
         'therapistId': widget.therapist.id,
         'day': selectedAppointment!['day'],
         'date': selectedAppointment!['date'],
         'time': selectedAppointment!['time'],
       });
 
+      // Use the DocumentReference to get the ID of the newly created document
+      String userId = appointmentRef.id;
+
+      // Optionally, update the user's document with the appointment ID if needed
+      // For example, if you have a specific user document to update, you can do:
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'userId': userId
+      });
+      
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -265,7 +275,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                       ),
                     ),
                     child: Text(
-                      'التعليقت',
+                      'المواعيد المتاحة',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
