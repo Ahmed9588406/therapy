@@ -19,6 +19,15 @@ class _TableTherapySelectionState extends State<TableTherapySelection> {
     });
   }
 
+  dynamic getFieldFromDocument(DocumentSnapshot doc, String fieldName) {
+    if (doc.exists) {
+      var data = doc.data() as Map<String, dynamic>;
+      return data[fieldName]; // Return null if fieldName does not exist
+    } else {
+      throw StateError('Document does not exist');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,11 +53,11 @@ class _TableTherapySelectionState extends State<TableTherapySelection> {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               var therapist = snapshot.data!.docs[index];
-              var imageUrl = therapist['imageUrl'] ??
+              var imageUrl = getFieldFromDocument(therapist, 'imageUrl') ??
                   'https://via.placeholder.com/150'; // Default image URL
-              var name = therapist['name'] ?? 'Unknown';
-              var specialization = therapist['specialization'] ?? 'Unknown';
-              var rate = therapist['rate']?.toString() ?? '0';
+              var name = getFieldFromDocument(therapist, 'name') ?? 'Unknown';
+              var specialization = getFieldFromDocument(therapist, 'specialization') ?? 'Unknown';
+              var rate = getFieldFromDocument(therapist, 'rate')?.toString() ?? '0';
 
               return Padding(
                 padding: const EdgeInsets.all(
@@ -165,7 +174,7 @@ class _TableTherapySelectionState extends State<TableTherapySelection> {
               width: 24.0,
               height: 24.0,
               color:
-                  _selectedIndex == 1 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+                  _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
             ),
             label: 'ملاحظاتي',
           ),
@@ -185,7 +194,7 @@ class _TableTherapySelectionState extends State<TableTherapySelection> {
               width: 24.0,
               height: 24.0,
               color:
-                  _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+                  _selectedIndex == 1 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
             ),
             label: 'تعلم',
           ),

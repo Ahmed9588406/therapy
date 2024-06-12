@@ -88,7 +88,6 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     );
   }
 
-
   int _selectedIndex = 0;
   int index = 0;
 
@@ -438,7 +437,6 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                             ),
                           ),
                         ),
-                        
                         const SizedBox(
                           width: 10,
                         ),
@@ -497,42 +495,22 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                               child: Text('خطأ في جلب المواعيد'));
                         }
                         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                          return const Center(child: Text('لا يوجد مواعيد'));
+                          // Here, instead of just showing text, we show the card
+                          return _buildSelectedDateTimeWidget({
+                            'day': 'اليوم',
+                            'date': 'التاريخ',
+                            'time': 'الوقت',
+                            // 'patientName': 'Default Patient' // Assuming you need a 'patientName' key as well.
+                          }); // Provide default or empty data
                         }
 
                         var appointments = snapshot.data!.docs;
 
-                        return Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
+                        return ListView(
                           children: appointments.map((appointment) {
                             var data =
                                 appointment.data() as Map<String, dynamic>;
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: [
-                                    Text(data['day'] ?? 'اليوم الافتراضي',
-                                        style: const TextStyle(fontSize: 16)),
-                                    Text(data['date'] ?? 'التاريخ الافت',
-                                        style: const TextStyle(fontSize: 16)),
-                                    Text(data['time'] ?? 'الوقت الافتراضي',
-                                        style: const TextStyle(fontSize: 16)),
-                                    IconButton(
-                                      icon: const Icon(Icons.close,
-                                          color: Colors.red),
-                                      onPressed: () {
-                                        FirebaseFirestore.instance
-                                            .collection('appointment')
-                                            .doc(appointment.id)
-                                            .delete();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
+                            return _buildSelectedDateTimeWidget(data);
                           }).toList(),
                         );
                       },
@@ -545,7 +523,8 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (BuildContext) {
-                                return EditAppointmentsPage(therapistId: widget.therapistId);
+                                return EditAppointmentsPage(
+                                    therapistId: widget.therapistId);
                               },
                             ),
                           );
@@ -634,7 +613,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
             icon: Icon(
               Icons.settings_outlined,
               color:
-                  _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5), 
+                  _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
               size: 27,
             ),
             label: 'الاعدادات',
@@ -645,5 +624,20 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
       ),
     );
   }
-}
 
+  Widget _buildSelectedDateTimeWidget(Map<String, dynamic> data) {
+    return Card(
+      elevation: 4.0,
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: ListTile(
+        leading: Icon(Icons.event_available),
+        title: Text(data['day'] ?? 'Session Type Not Specified'),
+        subtitle: Text('${data['date']} at ${data['time']}'),
+        // trailing: Text(data['patientName'] ?? 'Patient Name Not Specified'),
+        onTap: () {
+          // Optionally, handle tap event, e.g., navigate to a detailed view
+        },
+      ),
+    );
+  }
+}

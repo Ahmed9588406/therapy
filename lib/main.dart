@@ -5,9 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:therapy/add_user_comments.dart';
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
@@ -217,6 +218,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
                 child: const Text('Display Info for Therapy'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => addUserComment(title: "Your Title Here")),
+                  );
+                },
+                child: const Text('Add User Comment'),
               ),
             ],
           ),
