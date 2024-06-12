@@ -82,11 +82,11 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => NotificationDisplayForTherapy(appointments: []),
-                ),
-              );
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(
+              //     builder: (context) => NotificationDisplayForTherapy(appointments: []),
+              //   ),
+              // );
             },
             child: Text(
               'اظهر اشعراتي',
