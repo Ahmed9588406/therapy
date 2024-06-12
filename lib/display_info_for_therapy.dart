@@ -19,6 +19,7 @@ class TherapistProfilePage extends StatefulWidget {
 class _TherapistProfilePageState extends State<TherapistProfilePage> {
   late String imageUrl;
   bool showAppointments = false;
+  bool Switch = false;
 
   @override
   void initState() {
@@ -327,7 +328,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                     Row(
+                    Row(
                       children: [
                         RichText(
                           text: TextSpan(
@@ -402,67 +403,189 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          showAppointments = !showAppointments;
-                        });
-                      },
-                      child: Text(showAppointments ? 'إخفاء المواعيد' : 'عرض المواعيد'),
-                    ),
-                    if (showAppointments)
-                      StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('appointments')
-                            .where('therapistId', isEqualTo: widget.therapistId)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          if (snapshot.hasError) {
-                            return const Center(child: Text('خطأ في جلب البيانات'));
-                          }
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                            return const Center(child: Text('لا توجد مواعيد'));
-                          }
-
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: snapshot.data!.docs.length,
-                            itemBuilder: (context, index) {
-                              var appointment = snapshot.data!.docs[index].data()
-                                  as Map<String, dynamic>;
-                              return Card(
-                                child: ListTile(
-                                  title: Text(appointment['date']),
-                                  subtitle: Text(appointment['time']),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () async {
-                                      await FirebaseFirestore.instance
-                                          .collection('appointments')
-                                          .doc(snapshot.data!.docs[index].id)
-                                          .delete();
-                                    },
-                                  ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              Switch = false;
+                              showAppointments = false;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 8.0),
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Color(0XFFD68FFF),
+                                  width: 0.5,
                                 ),
+                              ),
+                            ),
+                            child: Text(
+                              'المواعيد المتاحة',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Tajawal',
+                                color: showAppointments
+                                    ? Colors.grey
+                                    : Color(0XFFD68FFF),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        // GestureDetector(
+                        //   onTap: () {
+                        //     setState(() {
+                        //       Switch = false;
+                        //       //showAppointments = true;
+                        //     });
+                        //   },
+                        //   child: Container(
+                        //     padding: const EdgeInsets.symmetric(
+                        //         vertical: 8.0, horizontal: 8.0),
+                        //     decoration: const BoxDecoration(
+                        //       border: Border(
+                        //         bottom: BorderSide(
+                        //           color: Color(0XFFD68FFF),
+                        //           width: 0.5,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //     child: Text(
+                        //       'المواعيد المتاحة',
+                        //       style: TextStyle(
+                        //         fontSize: 15,
+                        //         fontWeight: FontWeight.bold,
+                        //         fontFamily: 'Tajawal',
+                        //         color: showAppointments
+                        //             ? Color(0XFFD68FFF)
+                        //             : Colors.grey,
+                        //         decoration: TextDecoration.none,
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              showAppointments = !showAppointments;
+                            });
+                          },
+                          child: Text(showAppointments
+                              ? 'إخفاء المواعيد'
+                              : 'عرض المواعيد'),
+                        ),
+                        if (showAppointments)
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('appointments')
+                                .where('therapistId',
+                                    isEqualTo: widget.therapistId)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasError) {
+                                return const Center(
+                                    child: Text('خطأ في جلب البيانات'));
+                              }
+                              if (!snapshot.hasData ||
+                                  snapshot.data!.docs.isEmpty) {
+                                return const Center(
+                                    child: Text('لا توجد مواعيد'));
+                              }
+                    
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: snapshot.data!.docs.length,
+                                itemBuilder: (context, index) {
+                                  var appointment =
+                                      snapshot.data!.docs[index].data()
+                                          as Map<String, dynamic>;
+                                  return Card(
+                                    child: ListTile(
+                                      title: Text(appointment['date']),
+                                      subtitle: Text(appointment['time']),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () async {
+                                          await FirebaseFirestore.instance
+                                              .collection('appointments')
+                                              .doc(snapshot
+                                                  .data!.docs[index].id)
+                                              .delete();
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                      ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditAppointmentsPage(therapistId: widget.therapistId),
                           ),
-                        );
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditAppointmentsPage(
+                                    therapistId: widget.therapistId),
+                              ),
+                            );
+                          },
+                          child: const Text('اضف المواعيد'),
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          Switch = true;
+                        });
                       },
-                      child: const Text('اضف المواعيد'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 8.0),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0XFFD68FFF),
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'التعليقات',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Tajawal',
+                            color: showAppointments
+                                ? Colors.grey
+                                : Color(0XFFD68FFF),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -471,7 +594,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           );
         },
       ),
-     bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Color(0xFF1D1B1E),
         selectedItemColor: Color(0xFFD68FFF),
@@ -530,3 +653,4 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     );
   }
 }
+

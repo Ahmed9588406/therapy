@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:therapy/add_user_comments.dart';
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
@@ -224,10 +223,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => addUserComment(title: "Your Title Here")),
+                    MaterialPageRoute(builder: (context) => TableTherapySelection()),
                   );
                 },
-                child: const Text('Add User Comment'),
+                child: const Text('Table Profile Therapist'),
               ),
             ],
           ),

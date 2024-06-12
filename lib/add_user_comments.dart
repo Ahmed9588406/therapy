@@ -49,8 +49,8 @@ class StoreData {
 
 
 class addUserComment extends StatefulWidget {
-  final String title; // Add this line
-  const addUserComment({super.key, required this.title}); // Modify this line
+  final String therapistId;
+  const addUserComment({super.key, required this.therapistId});
 
   @override
   State<addUserComment> createState() => _addUserCommentState();
@@ -99,20 +99,23 @@ class _addUserCommentState extends State<addUserComment> {
       imageUrl = await _uploadImage(_image!); // Upload the image and get the URL
     }
 
+    // Add to addUserComment collection
     CollectionReference collRef = FirebaseFirestore.instance.collection('addUserComment');
     await collRef.add({
       'comment': commentController.text,
       'rate': rateController.text,
-      'imageUrl': imageUrl, // Add the imageUrl to the Firestore document
+      'imageUrl': imageUrl,
+      'userId': 'your_user_doc_id', // This should be fetched or passed as needed
+      'therapistId': widget.therapistId, // Use the passed therapistId
     });
 
-    // Optionally, you can handle navigation or user feedback here
+    // Optionally, handle navigation or user feedback here
   }
 
   Future<String?> getUserId() async {
     try {
       var collection = FirebaseFirestore.instance.collection('addUserComment');
-      var doc = await collection.doc('specific_doc_id').get(); // You need to know the document ID or have a query to get it
+      var doc = await collection.doc('users').get(); // You need to know the document ID or have a query to get it
       return doc.data()?['usertId']; // Assuming 'therapistId' is a field in the document
     } catch (e) {
       print("Failed to fetch therapist ID: $e");
@@ -126,7 +129,7 @@ class _addUserCommentState extends State<addUserComment> {
        return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: const Text('Add User Comment'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
