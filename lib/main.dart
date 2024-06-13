@@ -10,6 +10,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:therapy/TableProfileTherapists.dart';
 import 'package:therapy/mood_tracker.dart';
+import 'package:therapy/notification_mood_tracker.dart'; // Import the notification service
+import 'package:therapy/wallet_page.dart';
+import 'package:timezone/data/latest.dart' as tz; // Import timezone data
+import 'package:timezone/timezone.dart' as tz; // Import timezone handling
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
@@ -17,12 +21,26 @@ import 'display_info_for_therapy.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyZ-1234567890abcdefg", // API Key
+      appId: "1:1234567890:android:abc123def456", // App ID
+      messagingSenderId: "1234567890", // Sender ID
+      projectId: "your-app-id", // Project ID
+      databaseURL: "https://your-app.firebaseio.com", // Database URL
+    ),
+  );
   await initializeDateFormatting('ar', null); // Initialize Arabic locale
-
+  initializeTimezone(); // Initialize timezone settings
   runApp( const MyApp());
 }
- 
+
+Future<void> initializeTimezone() async {
+  tz.initializeTimeZones(); // Load the timezone database
+  var detroit = tz.getLocation('America/Detroit'); // Get a specific location
+  tz.setLocalLocation(detroit); // Set the local location
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});  
  
@@ -72,6 +90,16 @@ class _MyHomePageState extends State<MyHomePage> {
   final countryController = TextEditingController();
   final timeforsessionController = TextEditingController();
   File? _image;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  late MoodLocalNotificationService _notificationService;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationService = MoodLocalNotificationService(navigatorKey);
+    _notificationService.initNotifications(); // Initialize notifications
+    _notificationService.scheduleNotification(); // Schedule the notification
+  }
 
   @override
   void dispose() {
@@ -254,6 +282,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
                 child: const Text('Mood Tracker'),
+              ),
+               const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => WalletScreen()),
+                  );
+                },
+                child: const Text('E Wallet'),
               ),
             ],
           ),
