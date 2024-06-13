@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:therapy/TableProfileTherapists.dart';
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
@@ -149,6 +150,20 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<Map<String, dynamic>?> getTherapist() async {
+    try {
+      var collection = FirebaseFirestore.instance.collection('therapists');
+      var querySnapshot = await collection.where('someField', isEqualTo: 'someValue').get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.data(); // Returns the first therapist's data as a map
+      }
+      return null;
+    } catch (e) {
+      print("Failed to fetch therapist: $e");
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,10 +235,11 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  var therapist = await getTherapist(); // Ensure you have a method to fetch or create a therapist object
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => TableTherapySelection()),
+                    MaterialPageRoute(builder: (context) => TableProfileTherapists(therapist: therapist)),
                   );
                 },
                 child: const Text('Table Profile Therapist'),
