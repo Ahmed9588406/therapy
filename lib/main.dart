@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:therapy/TableProfileTherapists.dart';
+import 'package:therapy/mood_tracker.dart';
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
@@ -243,6 +244,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
                 child: const Text('Table Profile Therapist'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MoodTrackerPage()),
+                  );
+                },
+                child: const Text('Mood Tracker'),
               ),
             ],
           ),
