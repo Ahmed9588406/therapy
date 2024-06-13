@@ -2,8 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Added import for flutter_svg
 import 'package:fluttertoast/fluttertoast.dart';
-
-import 'display_info_for_therapy.dart'; // Import the TherapistProfilePage
+import 'TherapyShowDetails.dart'; // Import the TherapistProfilePage
 
 class TableTherapySelection extends StatefulWidget {
   @override
@@ -136,8 +135,8 @@ class _TableTherapySelectionState extends State<TableTherapySelection> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TherapistProfilePage(
-                            therapistId: therapist.id, // Access the document ID directly if therapist is a DocumentSnapshotPlatform
+                          builder: (context) => TherapyShowDetails(
+                            therapist: therapist, // Pass the entire therapist DocumentSnapshot
                           ),
                         ),
                       );
@@ -214,3 +213,6 @@ class _TableTherapySelectionState extends State<TableTherapySelection> {
     );
   }
 }
+
+
+

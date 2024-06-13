@@ -20,11 +20,13 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
   late String imageUrl;
   bool showAppointments = false;
   bool Switch = false;
+  List<Map<String, dynamic>> userComments = [];
 
   @override
   void initState() {
     super.initState();
     imageUrl = '';
+    _fetchUserComments();
   }
 
   Future<void> pickImage() async {
@@ -88,6 +90,24 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
         );
       },
     );
+  }
+
+   Future<void> _fetchUserComments() async {
+    var collection = FirebaseFirestore.instance.collection('addUserComment');
+    var snapshot = await collection
+        .where('therapistId', isEqualTo: widget.therapistId)
+        .get();
+    var fetchedComments = snapshot.docs
+        .map((doc) => {
+              'comment': doc['comment'],
+              'rate': doc['rate'],
+              'imageUrl': doc['imageUrl'],
+            })
+        .toList();
+
+    setState(() {
+      userComments = fetchedComments;
+    });
   }
 
   int _selectedIndex = 0;
@@ -442,38 +462,6 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                         const SizedBox(
                           width: 10,
                         ),
-                        // GestureDetector(
-                        //   onTap: () {
-                        //     setState(() {
-                        //       Switch = false;
-                        //       //showAppointments = true;
-                        //     });
-                        //   },
-                        //   child: Container(
-                        //     padding: const EdgeInsets.symmetric(
-                        //         vertical: 8.0, horizontal: 8.0),
-                        //     decoration: const BoxDecoration(
-                        //       border: Border(
-                        //         bottom: BorderSide(
-                        //           color: Color(0XFFD68FFF),
-                        //           width: 0.5,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //     child: Text(
-                        //       'المواعيد المتاحة',
-                        //       style: TextStyle(
-                        //         fontSize: 15,
-                        //         fontWeight: FontWeight.bold,
-                        //         fontFamily: 'Tajawal',
-                        //         color: showAppointments
-                        //             ? Color(0XFFD68FFF)
-                        //             : Colors.grey,
-                        //         decoration: TextDecoration.none,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
                       ],
                     ),
                     const SizedBox(
@@ -587,6 +575,55 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    // Display user comments
+                    for (var comment in userComments)
+                      Card(
+                        color: Color.fromARGB(255, 239, 226, 243),
+                        child: ListTile(
+                          
+                          leading: comment['imageUrl'] != null
+                              ? CircleAvatar(
+                                  backgroundImage: NetworkImage(comment['imageUrl']),
+                                )
+                              : const CircleAvatar(
+                                  child: Icon(Icons.person),
+                                ),
+                          title: Text(
+                            comment['comment'],
+                             style: const TextStyle(
+                                      fontFamily: 'Tajawal',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                ),
+                          
+                          subtitle: Row(
+                                children: [
+                                  const Text(
+                                    'التقييم:',
+                                    style: TextStyle(
+                                      fontFamily: 'Tajawal',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  for (int i = 0;
+                                      i <
+                                          int.parse(
+                                              comment['rate']);
+                                      i++)
+                                    const Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                      size: 18,
+                                    ),
+                                  // Text('التقييم: ${userComments[index]['rate']}'),
+                                ],
+                              ),
+                          //subtitle: Text('التقييم: ${comment['rate']}'),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -653,4 +690,3 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     );
   }
 }
-

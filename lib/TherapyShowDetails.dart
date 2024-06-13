@@ -65,7 +65,8 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   Future<void> _bookAppointment() async {
     if (selectedAppointment != null) {
       // Add the appointment to the 'users' collection and capture the DocumentReference
-      DocumentReference appointmentRef = await FirebaseFirestore.instance.collection('users').add({
+      DocumentReference appointmentRef =
+          await FirebaseFirestore.instance.collection('users').add({
         'therapistId': widget.therapist.id,
         'day': selectedAppointment!['day'],
         'date': selectedAppointment!['date'],
@@ -77,10 +78,11 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
 
       // Optionally, update the user's document with the appointment ID if needed
       // For example, if you have a specific user document to update, you can do:
-      await FirebaseFirestore.instance.collection('users').doc(userId).update({
-        'userId': userId
-      });
-      
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update({'userId': userId});
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -416,11 +418,44 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                         itemBuilder: (context, index) {
                           return Card(
                             child: ListTile(
-                              title: Text(userComments[index]['comment']),
-                              subtitle: Text('Rating: ${userComments[index]['rate']}'),
-                              leading: userComments[index]['imageUrl'] != null
-                                  ? Image.network(userComments[index]['imageUrl'])
-                                  : null,
+                              title: Text(
+                                userComments[index]['comment'],
+                                style: const TextStyle(
+                                      fontFamily: 'Tajawal',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                ),
+                              subtitle: Row(
+                                children: [
+                                  const Text(
+                                    'التقييم:',
+                                    style: TextStyle(
+                                      fontFamily: 'Tajawal',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  for (int i = 0;
+                                      i <
+                                          int.parse(
+                                              userComments[index]['rate']);
+                                      i++)
+                                    const Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                      size: 18,
+                                    ),
+                                  // Text('التقييم: ${userComments[index]['rate']}'),
+                                ],
+                              ),
+                              leading: CircleAvatar(
+                                backgroundImage:
+                                    userComments[index]['imageUrl'] != null
+                                        ? NetworkImage(
+                                            userComments[index]['imageUrl'])
+                                        : null,
+                              ),
                             ),
                           );
                         },
@@ -439,7 +474,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                             return AlertDialog(
                               title: const Text(
                                 ' :سعر الجلسة',
-                                 style:  TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Tajawal',
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -493,7 +528,8 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => addUserComment(therapistId: widget.therapist.id),
+              builder: (context) =>
+                  addUserComment(therapistId: widget.therapist.id),
             ),
           );
         },
