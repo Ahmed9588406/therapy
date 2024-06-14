@@ -1,15 +1,18 @@
 import 'dart:io';
-import 'notification_display_for_therapy.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:therapy/edit_appointments_page.dart';
 
+import 'notification_display_for_therapy.dart';
+
 class TherapistProfilePage extends StatefulWidget {
   final String therapistId;
+  final List<Map<String, dynamic>> appointments;
 
-  const TherapistProfilePage({Key? key, required this.therapistId})
+  const TherapistProfilePage({Key? key, required this.therapistId, this.appointments = const []})
       : super(key: key);
 
   @override
@@ -113,6 +116,11 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
+    if (widget.therapistId.isEmpty) {
+      print("Invalid therapist ID");
+      return;
+    }
+
     setState(() {
       _selectedIndex = index;
     });
@@ -124,7 +132,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           MaterialPageRoute(
             builder: (BuildContext) {
               return TherapistProfilePage(
-                therapistId: '',
+                therapistId: widget.therapistId,
               );
               // return TherapistSettingsPage();
             },
@@ -138,7 +146,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           MaterialPageRoute(
             builder: (BuildContext) {
               return TherapistProfilePage(
-                therapistId: '',
+                therapistId: widget.therapistId,
               );
               // return TherapistNotificationsEmptyPage();
             },
@@ -146,19 +154,6 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
         );
         break;
       case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext) {
-              return TherapistProfilePage(
-                therapistId: '',
-              );
-              // return TherapistSessionsEmpty();
-            },
-          ),
-        );
-        break;
-      case 3:
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -178,20 +173,20 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                   var appointmentsList = snapshot.data!.docs
                       .map((doc) => doc.data() as Map<String, dynamic>)
                       .toList();
-                  return NotificationDisplayForTherapy(appointments: appointmentsList);
+                  return NotificationDisplayForTherapy(appointments: appointmentsList, therapistId: widget.therapistId);
                 },
               );
             },
           ),
         );
         break;
-      case 4:
+      case 3:
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (BuildContext) {
               return TherapistProfilePage(
-                therapistId: '',
+                therapistId: widget.therapistId,
               );
               // return ProfileForTherapistFlowPage();
             },
@@ -692,36 +687,25 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.notifications_none,
+              Icons.notifications_active,
               color:
                   _selectedIndex == 2 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
               size: 27,
             ),
-            label: 'اشعارات',
+            label: 'اشعراتي',
             backgroundColor:
                 _selectedIndex == 2 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.notifications_active,
+              Icons.settings_outlined,
               color:
                   _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
               size: 27,
             ),
-            label: 'اشعراتي',
-            backgroundColor:
-                _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.settings_outlined,
-              color:
-                  _selectedIndex == 4 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
-              size: 27,
-            ),
             label: 'الاعدادات',
             backgroundColor:
-                _selectedIndex == 4 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+                _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
           ),
         ],
       ),
