@@ -39,11 +39,11 @@ class _NotificationDisplayForTherapyState extends State<NotificationDisplayForTh
                   ListTile(
                     leading: Icon(Icons.calendar_today),
                     title: Text('Date: ${appointment['date']}'),
-                    subtitle: Text('Time: ${appointment['time']}'),
+                    subtitle: Text('Time: ${appointment['time']} - Day: ${appointment['day']}'),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('هناك حجز في ${appointment['date']} الساعة ${appointment['time']}'),
+                    child: Text('هناك حجز في ${appointment['date']} الساعة ${appointment['time']} يوم ${appointment['day']}'),
                   ),
                   ButtonBar(
                     alignment: MainAxisAlignment.center,

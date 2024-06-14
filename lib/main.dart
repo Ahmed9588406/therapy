@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:therapy/TableProfileTherapists.dart';
 import 'package:therapy/mood_tracker.dart';
+import 'package:therapy/wallet_page.dart';
 
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
@@ -254,6 +255,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
                 child: const Text('Mood Tracker'),
+              ),
+               const SizedBox(height: 20),
+              ElevatedButton(
+               onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => WalletScreen()),
+                  );
+               },
+                child: const Text('E Wallet'),
               ),
             ],
           ),

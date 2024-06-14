@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'notification_display_for_therapy.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -159,6 +159,33 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
         );
         break;
       case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) {
+              return FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('appointments')
+                    .where('therapistId', isEqualTo: widget.therapistId)
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  var appointmentsList = snapshot.data!.docs
+                      .map((doc) => doc.data() as Map<String, dynamic>)
+                      .toList();
+                  return NotificationDisplayForTherapy(appointments: appointmentsList);
+                },
+              );
+            },
+          ),
+        );
+        break;
+      case 4:
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -676,14 +703,25 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.settings_outlined,
+              Icons.notifications_active,
               color:
                   _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
               size: 27,
             ),
-            label: 'الاعدادات',
+            label: 'اشعراتي',
             backgroundColor:
                 _selectedIndex == 3 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.settings_outlined,
+              color:
+                  _selectedIndex == 4 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
+              size: 27,
+            ),
+            label: 'الاعدادات',
+            backgroundColor:
+                _selectedIndex == 4 ? Color(0xffD68FFF) : Color(0xffE8E0E5),
           ),
         ],
       ),
