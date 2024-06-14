@@ -15,18 +15,17 @@ import 'package:therapy/wallet_page.dart';
 import 'TableTherapySelection.dart';
 import 'display_info_for_therapy.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await initializeDateFormatting('ar', null); // Initialize Arabic locale
 
-  runApp( const MyApp());
+  runApp(const MyApp());
 }
- 
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});  
- 
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -34,7 +33,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -52,18 +50,16 @@ class MyApp extends StatelessWidget {
     );
   }
 }
- 
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
- 
-  
- 
+
   final String title;
- 
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
- 
+
 class _MyHomePageState extends State<MyHomePage> {
   final nameController = TextEditingController();
   final specializationController = TextEditingController();
@@ -87,7 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
@@ -99,7 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final FirebaseStorage storage = FirebaseStorage.instance;
       final Uint8List imageData = await image.readAsBytes();
-      Reference ref = storage.ref().child('profileImages/${image.path.split('/').last}');
+      Reference ref =
+          storage.ref().child('profileImages/${image.path.split('/').last}');
       UploadTask uploadTask = ref.putData(imageData);
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
@@ -113,10 +111,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _submitForm() async {
     String? imageUrl;
     if (_image != null) {
-      imageUrl = await _uploadImage(_image!); // Upload the image and get the URL
+      imageUrl =
+          await _uploadImage(_image!); // Upload the image and get the URL
     }
 
-    CollectionReference collRef = FirebaseFirestore.instance.collection('therapists');
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('therapists');
     DocumentReference docRef = await collRef.add({
       'name': nameController.text,
       'specialization': specializationController.text,
@@ -137,15 +137,19 @@ class _MyHomePageState extends State<MyHomePage> {
     // Navigate to the TherapistProfilePage with the new therapistId
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TherapistProfilePage(therapistId: therapistId)),
+      MaterialPageRoute(
+          builder: (context) => TherapistProfilePage(therapistId: therapistId)),
     );
   }
 
   Future<String?> getTherapistId() async {
     try {
       var collection = FirebaseFirestore.instance.collection('therapists');
-      var doc = await collection.doc('specific_doc_id').get(); // You need to know the document ID or have a query to get it
-      return doc.data()?['therapistId']; // Assuming 'therapistId' is a field in the document
+      var doc = await collection
+          .doc('specific_doc_id')
+          .get(); // You need to know the document ID or have a query to get it
+      return doc.data()?[
+          'therapistId']; // Assuming 'therapistId' is a field in the document
     } catch (e) {
       print("Failed to fetch therapist ID: $e");
       return null;
@@ -155,9 +159,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<Map<String, dynamic>?> getTherapist() async {
     try {
       var collection = FirebaseFirestore.instance.collection('therapists');
-      var querySnapshot = await collection.where('someField', isEqualTo: 'someValue').get();
+      var querySnapshot =
+          await collection.where('someField', isEqualTo: 'someValue').get();
       if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot.docs.first.data(); // Returns the first therapist's data as a map
+        return querySnapshot.docs.first
+            .data(); // Returns the first therapist's data as a map
       }
       return null;
     } catch (e) {
@@ -175,7 +181,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView( // Wrap the column in a SingleChildScrollView
+        child: SingleChildScrollView(
+          // Wrap the column in a SingleChildScrollView
           child: Column(
             children: [
               GestureDetector(
@@ -217,7 +224,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               TextFormField(
                 controller: timeforsessionController,
-                decoration: const InputDecoration(hintText: 'مدة اجلسة التس تريدها'),
+                decoration:
+                    const InputDecoration(hintText: 'مدة اجلسة التس تريدها'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
@@ -230,7 +238,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => TableTherapySelection()),
+                    MaterialPageRoute(
+                        builder: (context) => TableTherapySelection()),
                   );
                 },
                 child: const Text('Display Info for Therapy'),
@@ -238,17 +247,20 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  var therapist = await getTherapist(); // Ensure you have a method to fetch or create a therapist object
+                  var therapist =
+                      await getTherapist(); // Ensure you have a method to fetch or create a therapist object
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => TableProfileTherapists(therapist: therapist)),
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            TableProfileTherapists(therapist: therapist)),
                   );
                 },
                 child: const Text('Table Profile Therapist'),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: (){
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => MoodTrackerPage()),
@@ -256,14 +268,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 child: const Text('Mood Tracker'),
               ),
-               const SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
-               onPressed: (){
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => WalletScreen()),
                   );
-               },
+                },
                 child: const Text('E Wallet'),
               ),
             ],

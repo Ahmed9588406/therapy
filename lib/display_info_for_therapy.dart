@@ -12,7 +12,8 @@ class TherapistProfilePage extends StatefulWidget {
   final String therapistId;
   final List<Map<String, dynamic>> appointments;
 
-  const TherapistProfilePage({Key? key, required this.therapistId, this.appointments = const []})
+  const TherapistProfilePage(
+      {Key? key, required this.therapistId, this.appointments = const []})
       : super(key: key);
 
   @override
@@ -23,6 +24,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
   late String imageUrl;
   bool showAppointments = false;
   bool Switch = false;
+  double averageRate = 0.0;
   List<Map<String, dynamic>> userComments = [];
 
   @override
@@ -95,7 +97,7 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
     );
   }
 
-   Future<void> _fetchUserComments() async {
+  Future<void> _fetchUserComments() async {
     var collection = FirebaseFirestore.instance.collection('addUserComment');
     var snapshot = await collection
         .where('therapistId', isEqualTo: widget.therapistId)
@@ -107,6 +109,14 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
               'imageUrl': doc['imageUrl'],
             })
         .toList();
+
+    if (fetchedComments.isNotEmpty) {
+      double totalRate = 0.0;
+      fetchedComments.forEach((comment) {
+        totalRate += double.parse(comment['rate']);
+      });
+      averageRate = totalRate / fetchedComments.length;
+    }
 
     setState(() {
       userComments = fetchedComments;
@@ -173,7 +183,9 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                   var appointmentsList = snapshot.data!.docs
                       .map((doc) => doc.data() as Map<String, dynamic>)
                       .toList();
-                  return NotificationDisplayForTherapy(appointments: appointmentsList, therapistId: widget.therapistId);
+                  return NotificationDisplayForTherapy(
+                      appointments: appointmentsList,
+                      therapistId: widget.therapistId);
                 },
               );
             },
@@ -315,8 +327,17 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                             fontSize: 16,
                           ),
                         ),
-                        for (int i = 0; i < int.parse(data['rate']); i++)
-                          const Icon(Icons.star, color: Colors.amber),
+                        Text(
+                          averageRate
+                              .toStringAsFixed(1), // Display the average rate
+                          style: const TextStyle(
+                            fontFamily: 'Tajawal',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        const Icon(Icons.star, color: Colors.amber),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -523,14 +544,13 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                                 return const Center(
                                     child: Text('لا توجد مواعيد'));
                               }
-                    
+
                               return ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: snapshot.data!.docs.length,
                                 itemBuilder: (context, index) {
-                                  var appointment =
-                                      snapshot.data!.docs[index].data()
-                                          as Map<String, dynamic>;
+                                  var appointment = snapshot.data!.docs[index]
+                                      .data() as Map<String, dynamic>;
                                   return Card(
                                     child: ListTile(
                                       title: Text(appointment['date']),
@@ -540,8 +560,8 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                                         onPressed: () async {
                                           await FirebaseFirestore.instance
                                               .collection('appointments')
-                                              .doc(snapshot
-                                                  .data!.docs[index].id)
+                                              .doc(
+                                                  snapshot.data!.docs[index].id)
                                               .delete();
                                         },
                                       ),
@@ -603,46 +623,44 @@ class _TherapistProfilePageState extends State<TherapistProfilePage> {
                       Card(
                         color: Color.fromARGB(255, 239, 226, 243),
                         child: ListTile(
-                          
                           leading: comment['imageUrl'] != null
                               ? CircleAvatar(
-                                  backgroundImage: NetworkImage(comment['imageUrl']),
+                                  backgroundImage:
+                                      NetworkImage(comment['imageUrl']),
                                 )
                               : const CircleAvatar(
                                   child: Icon(Icons.person),
                                 ),
                           title: Text(
                             comment['comment'],
-                             style: const TextStyle(
-                                      fontFamily: 'Tajawal',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                ),
-                          
+                            style: const TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+
                           subtitle: Row(
-                                children: [
-                                  const Text(
-                                    'التقييم:',
-                                    style: TextStyle(
-                                      fontFamily: 'Tajawal',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  for (int i = 0;
-                                      i <
-                                          int.parse(
-                                              comment['rate']);
-                                      i++)
-                                    const Icon(
-                                      Icons.star,
-                                      color: Colors.amber,
-                                      size: 18,
-                                    ),
-                                  // Text('التقييم: ${userComments[index]['rate']}'),
-                                ],
+                            children: [
+                              const Text(
+                                'التقييم:',
+                                style: TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
                               ),
+                              for (int i = 0;
+                                  i < int.parse(comment['rate']);
+                                  i++)
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                  size: 18,
+                                ),
+                              // Text('التقييم: ${userComments[index]['rate']}'),
+                            ],
+                          ),
                           //subtitle: Text('التقييم: ${comment['rate']}'),
                         ),
                       ),

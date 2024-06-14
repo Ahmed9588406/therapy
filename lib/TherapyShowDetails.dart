@@ -18,6 +18,7 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
   List<Map<String, dynamic>> appointments = [];
   Map<String, dynamic>? selectedAppointment;
   List<Map<String, dynamic>> userComments = [];
+  double averageRate = 0.0; // Added to store the average rate
 
   @override
   void initState() {
@@ -56,6 +57,14 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
               'imageUrl': doc['imageUrl'],
             })
         .toList();
+
+    if (fetchedComments.isNotEmpty) {
+      double totalRate = 0.0;
+      fetchedComments.forEach((comment) {
+        totalRate += double.parse(comment['rate']);
+      });
+      averageRate = totalRate / fetchedComments.length;
+    }
 
     setState(() {
       userComments = fetchedComments;
@@ -188,8 +197,16 @@ class _TherapyShowDetailsState extends State<TherapyShowDetails> {
                     color: Colors.black,
                   ),
                 ),
-                for (int i = 0; i < int.parse(widget.therapist['rate']); i++)
-                  const Icon(Icons.star, color: Colors.amber),
+                Text(
+                  averageRate.toStringAsFixed(1), // Display the average rate
+                  style: const TextStyle(
+                    fontFamily: 'Tajawal',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                    color: Colors.amber,
+                  ),
+                ),
+                const Icon(Icons.star, color: Colors.amber),
               ],
             ),
             const SizedBox(height: 10),
